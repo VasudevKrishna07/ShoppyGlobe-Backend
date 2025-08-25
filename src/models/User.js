@@ -321,8 +321,8 @@ userSchema.virtual('isLocked').get(function() {
   return !!(this.lockUntil && this.lockUntil > Date.now());
 });
 
-// Index for performance
-userSchema.index({ email: 1 });
+// Index for performance - REMOVED email index to fix duplicate warning
+// userSchema.index({ email: 1 }); // REMOVED - unique: true already creates index
 userSchema.index({ role: 1 });
 userSchema.index({ isActive: 1 });
 userSchema.index({ createdAt: -1 });

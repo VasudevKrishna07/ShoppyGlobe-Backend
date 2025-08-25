@@ -1,3 +1,4 @@
+
 const express = require('express');
 const {
   register,
@@ -16,6 +17,13 @@ const { protect, sensitiveOperationLimit, logUserActivity } = require('../middle
 const { validateRegister, validateLogin, validateForgotPassword, validateResetPassword, validateUpdatePassword } = require('../validators/authValidator');
 
 const router = express.Router();
+
+router.get('/', (req, res) => {
+  res.json({ 
+    message: 'Auth API is working',
+    endpoints: ['/register', '/login', '/me', '/logout'] 
+  });
+});
 
 /**
  * @swagger

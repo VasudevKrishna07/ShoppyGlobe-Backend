@@ -124,8 +124,8 @@ const cartSchema = new mongoose.Schema({
 });
 
 // Indexes
-cartSchema.index({ user: 1 });
-cartSchema.index({ sessionId: 1 });
+// cartSchema.index({ user: 1 });
+// cartSchema.index({ sessionId: 1 });
 cartSchema.index({ lastModified: 1 });
 cartSchema.index({ isAbandoned: 1, abandonedAt: 1 });
 

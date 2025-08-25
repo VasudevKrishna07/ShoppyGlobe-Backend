@@ -1,3 +1,13 @@
+process.on('uncaughtException', err => {
+  console.error('Uncaught Exception:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', err => {
+  console.error('Unhandled Rejection:', err);
+  process.exit(1);
+});
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -22,16 +32,16 @@ const notFound = require('./src/middleware/notFound');
 
 // Import routes
 const authRoutes = require('./src/routes/authRoutes');
-const userRoutes = require('./src/routes/userRoutes');
+// const userRoutes = require('./src/routes/userRoutes');
 const productRoutes = require('./src/routes/productRoutes');
-const categoryRoutes = require('./src/routes/categoryRoutes');
+// const categoryRoutes = require('./src/routes/categoryRoutes');
 const cartRoutes = require('./src/routes/cartRoutes');
 const orderRoutes = require('./src/routes/orderRoutes');
 const paymentRoutes = require('./src/routes/paymentRoutes');
-const reviewRoutes = require('./src/routes/reviewRoutes');
-const wishlistRoutes = require('./src/routes/wishlistRoutes');
-const adminRoutes = require('./src/routes/adminRoutes');
-const uploadRoutes = require('./src/routes/uploadRoutes');
+// const reviewRoutes = require('./src/routes/reviewRoutes');
+// const wishlistRoutes = require('./src/routes/wishlistRoutes');
+// const adminRoutes = require('./src/routes/adminRoutes');
+// const uploadRoutes = require('./src/routes/uploadRoutes');
 
 const app = express();
 
@@ -169,18 +179,24 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Add this before your routes
+app.get('/favicon.ico', (req, res) => {
+  res.status(204).end(); // No content
+});
+
+
 // API Routes
 app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
+// app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
-app.use('/api/categories', categoryRoutes);
+// app.use('/api/categories', categoryRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
-app.use('/api/reviews', reviewRoutes);
-app.use('/api/wishlist', wishlistRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/upload', uploadRoutes);
+// app.use('/api/reviews', reviewRoutes);
+// app.use('/api/wishlist', wishlistRoutes);
+// app.use('/api/admin', adminRoutes);
+// app.use('/api/upload', uploadRoutes);
 
 // Serve static files
 app.use('/uploads', express.static('uploads'));

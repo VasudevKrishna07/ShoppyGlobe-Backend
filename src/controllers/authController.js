@@ -4,7 +4,7 @@ const User = require('../models/User');
 const logger = require('../config/logger');
 const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/appError');
-const Email = require('../services/emailService');
+// const Email = require('../services/emailService');
 
 /**
  * @desc    Register a new user
@@ -37,8 +37,8 @@ const register = asyncHandler(async (req, res, next) => {
   try {
     const verificationURL = `${req.get('origin') || process.env.CLIENT_URL}/verify-email/${verificationToken}`;
     
-    await new Email(user, verificationURL).sendWelcome();
-
+    // await new Email(user, verificationURL).sendWelcome();
+    console.log('Email would be sent to:', user.email);
     logger.info(`New user registered: ${email}`);
   } catch (error) {
     user.emailVerificationToken = undefined;
