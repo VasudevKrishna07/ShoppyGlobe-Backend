@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-// Sample products data for testing
+// Sample products data with working image URLs (using Unsplash)
 const sampleProducts = [
   {
     _id: '1',
@@ -11,7 +11,7 @@ const sampleProducts = [
     originalPrice: 129.99,
     category: 'Electronics',
     brand: 'TechBrand',
-    image: 'https://via.placeholder.com/300x300?text=Headphones',
+    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=300&fit=crop&crop=center',
     rating: 4.5,
     reviewCount: 128,
     inStock: true,
@@ -25,7 +25,7 @@ const sampleProducts = [
     originalPrice: 249.99,
     category: 'Electronics',
     brand: 'FitTech',
-    image: 'https://via.placeholder.com/300x300?text=Smart+Watch',
+    image: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=300&h=300&fit=crop&crop=center',
     rating: 4.3,
     reviewCount: 89,
     inStock: true,
@@ -39,7 +39,7 @@ const sampleProducts = [
     originalPrice: 39.99,
     category: 'Clothing',
     brand: 'EcoWear',
-    image: 'https://via.placeholder.com/300x300?text=T-Shirt',
+    image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=300&h=300&fit=crop&crop=center',
     rating: 4.7,
     reviewCount: 203,
     inStock: true,
@@ -53,7 +53,7 @@ const sampleProducts = [
     originalPrice: 34.99,
     category: 'Food',
     brand: 'CoffeeCo',
-    image: 'https://via.placeholder.com/300x300?text=Coffee',
+    image: 'https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=300&h=300&fit=crop&crop=center',
     rating: 4.8,
     reviewCount: 156,
     inStock: true,
@@ -67,7 +67,7 @@ const sampleProducts = [
     originalPrice: 69.99,
     category: 'Sports',
     brand: 'YogaLife',
-    image: 'https://via.placeholder.com/300x300?text=Yoga+Mat',
+    image: 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=300&h=300&fit=crop&crop=center',
     rating: 4.6,
     reviewCount: 92,
     inStock: true,
@@ -81,7 +81,7 @@ const sampleProducts = [
     originalPrice: 44.99,
     category: 'Accessories',
     brand: 'HydroMax',
-    image: 'https://via.placeholder.com/300x300?text=Water+Bottle',
+    image: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=300&h=300&fit=crop&crop=center',
     rating: 4.4,
     reviewCount: 167,
     inStock: true,
@@ -142,6 +142,18 @@ router.get('/:id', (req, res) => {
     return res.status(404).json({ success: false, message: 'Product not found' });
   }
   res.json({ success: true, data: { product } });
+});
+
+// GET /api/products/categories/list - Get all categories
+router.get('/categories/list', (req, res) => {
+  const categories = [...new Set(sampleProducts.map(p => p.category))];
+  
+  res.json({
+    success: true,
+    data: {
+      categories
+    }
+  });
 });
 
 module.exports = router;
