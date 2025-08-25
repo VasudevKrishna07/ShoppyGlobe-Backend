@@ -12,7 +12,7 @@ const AppError = require('../utils/appError');
  * @access  Public
  */
 const register = asyncHandler(async (req, res, next) => {
-  const { firstName, lastName, email, password, phone } = req.body;
+  const { firstName, lastName, email, password, phone, agreeToTerms } = req.body;
 
   // Check if user already exists
   const existingUser = await User.findByEmail(email);
@@ -26,7 +26,8 @@ const register = asyncHandler(async (req, res, next) => {
     lastName,
     email,
     password,
-    phone
+    phone,
+    agreeToTerms
   });
 
   // Generate email verification token
@@ -38,7 +39,12 @@ const register = asyncHandler(async (req, res, next) => {
     const verificationURL = `${req.get('origin') || process.env.CLIENT_URL}/verify-email/${verificationToken}`;
     
     // await new Email(user, verificationURL).sendWelcome();
-    console.log('Email would be sent to:', user.email);
+    
+      console.log('Email would be sent to:', user.email);
+      res.status(200).json({
+        success: true,
+        message: 'Password reset instructions sent to email'
+      });
     logger.info(`New user registered: ${email}`);
   } catch (error) {
     user.emailVerificationToken = undefined;

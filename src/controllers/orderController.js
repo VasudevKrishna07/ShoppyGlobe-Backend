@@ -6,6 +6,7 @@ const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/appError');
 const logger = require('../config/logger');
 const emailService = require('../services/emailService');
+const { clearSampleCart } = require('../routes/cartRoutes');
 
 /**
  * @desc    Get all orders with filtering and pagination
@@ -221,7 +222,8 @@ const createOrder = asyncHandler(async (req, res, next) => {
     }
 
     // Clear user's cart
-    await cart.clearCart();
+    // await cart.clearCart();
+    clearSampleCart();
 
     // Update user statistics
     await User.findByIdAndUpdate(req.user.id, {

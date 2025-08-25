@@ -143,7 +143,7 @@ const getProduct = asyncHandler(async (req, res, next) => {
     .populate('relatedProducts', 'title price thumbnail rating');
 
   if (!product) {
-    return next(new AppError('Product not found', 404));
+    return next(new AppError('Product not found get product', 404));
   }
 
   // Increment view count
@@ -194,7 +194,7 @@ const updateProduct = asyncHandler(async (req, res, next) => {
   let product = await Product.findById(req.params.id);
 
   if (!product) {
-    return next(new AppError('Product not found', 404));
+    return next(new AppError('Product not found update product', 404));
   }
 
   // Make sure user is product owner or admin
@@ -235,7 +235,7 @@ const deleteProduct = asyncHandler(async (req, res, next) => {
   const product = await Product.findById(req.params.id);
 
   if (!product) {
-    return next(new AppError('Product not found', 404));
+    return next(new AppError('Product not found delete product', 404));
   }
 
   // Make sure user is product owner or admin
@@ -362,7 +362,7 @@ const getRelatedProducts = asyncHandler(async (req, res, next) => {
   const product = await Product.findById(req.params.id);
   
   if (!product) {
-    return next(new AppError('Product not found', 404));
+    return next(new AppError('Product not found getrelatedproducts', 404));
   }
 
   const limit = parseInt(req.query.limit, 10) || 6;
@@ -401,7 +401,7 @@ const updateProductStock = asyncHandler(async (req, res, next) => {
   const product = await Product.findById(req.params.id);
 
   if (!product) {
-    return next(new AppError('Product not found', 404));
+    return next(new AppError('Product not found updateproductstock', 404));
   }
 
   // Make sure user is product owner or admin
@@ -474,7 +474,7 @@ const getProductAnalytics = asyncHandler(async (req, res, next) => {
   const product = await Product.findById(req.params.id);
 
   if (!product) {
-    return next(new AppError('Product not found', 404));
+    return next(new AppError('Product not found getProductAnalytics', 404));
   }
 
   // Make sure user is product owner or admin

@@ -1,5 +1,14 @@
 const express = require('express');
 const router = express.Router();
+const {
+  protect,
+  authorize,
+  requireEmailVerification,
+  optionalAuth,
+  // ... other middlewares if needed
+} = require('../middleware/auth');
+const asyncHandler = require('../utils/asyncHandler');
+
 
 // Sample products data with working image URLs (using Unsplash)
 const sampleProducts = [
@@ -139,7 +148,7 @@ router.get('/', (req, res) => {
 router.get('/:id', (req, res) => {
   const product = sampleProducts.find(p => p._id === req.params.id);
   if (!product) {
-    return res.status(404).json({ success: false, message: 'Product not found' });
+    return res.status(404).json({ success: false, message: 'Product not found api/products/:id' });
   }
   res.json({ success: true, data: { product } });
 });
@@ -155,5 +164,29 @@ router.get('/categories/list', (req, res) => {
     }
   });
 });
+
+// Create product
+router.post('/', protect, authorize('admin'), asyncHandler(async (req,res)=>{
+  const { title, description, price, category, brand, stock, thumbnail, images, tags } = req.body;
+  const product = await Product.create({ title, description, price, category, brand, stock, thumbnail, images, tags });
+  res.status(201).json({ success:true, data:{ product } });
+}));
+
+// Update product
+router.put('/:id', protect, authorize('admin'), asyncHandler(async (req,res)=>{
+  const product = await Product.findById(req.params.id);
+  if (!product) return res.status(404).json({ success:false, message:'Product not found admin' });
+  Object.assign(product, req.body);
+  await product.save();
+  res.json({ success:true, data:{ product } });
+}));
+
+// Featured products
+router.get('/featured', asyncHandler(async (req,res)=>{
+  const limit = parseInt(req.query.limit) || 5;
+  const featuredProducts = sampleProducts.slice(0, limit);
+  res.json({ success:true, data:{ products:featuredProducts } });
+}));
+
 
 module.exports = router;

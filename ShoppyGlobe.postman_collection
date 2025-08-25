@@ -2,7 +2,9 @@
   "info": {
     "name": "ShoppyGlobe API",
     "description": "E-commerce backend API for ShoppyGlobe platform",
-    "version": "1.0.0"
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+
   },
   "variable": [
     {
@@ -32,7 +34,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"Password@123\",\n  \"phone\": \"+919876543210\"\n}"
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"Password@123\",\n  \"phone\": \"+919876543210\",\n  \"agreeToTerms\": \"true\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/auth/register",
@@ -68,7 +70,7 @@
                 "exec": [
                   "if (pm.response.code === 200) {",
                   "  const responseJson = pm.response.json();",
-                  "  pm.collectionVariables.set('authToken', responseJson.data.token);",
+                  "  pm.environment.set('authToken', responseJson.data.token);",
                   "}"
                 ]
               }
@@ -179,7 +181,22 @@
                 }
               ]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const products = pm.response.json().data.products;",
+                  "  if (products.length > 0) {",
+                  "    pm.collectionVariables.set('productId', products[0]._id);",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Search Products",
@@ -215,9 +232,9 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/products/{{productId}}",
+              "raw": "{{baseUrl}}/products/1",
               "host": ["{{baseUrl}}"],
-              "path": ["products", "{{productId}}"]
+              "path": ["products", "1"]
             }
           }
         },
@@ -244,7 +261,20 @@
               "host": ["{{baseUrl}}"],
               "path": ["products"]
             }
-          }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const order = pm.response.json().data.order;",
+                  "  pm.collectionVariables.set('orderId', order._id);",
+                  "}"
+                ]
+              }
+            }
+          ]
         },
         {
           "name": "Update Product",
@@ -265,9 +295,9 @@
               "raw": "{\n  \"title\": \"Updated Product Title\",\n  \"price\": 2499,\n  \"stock\": 75\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/products/{{productId}}",
+              "raw": "{{baseUrl}}/products/{{itemId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["products", "{{productId}}"]
+              "path": ["products", "{{itemId}}"]
             }
           }
         },
@@ -326,7 +356,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"productId\": \"{{productId}}\",\n  \"quantity\": 2\n}"
+              "raw": "{\n  \"productId\": \"{{itemId}}\",\n  \"quantity\": 2\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/cart",
@@ -354,9 +384,9 @@
               "raw": "{\n  \"quantity\": 3\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/cart/{{productId}}",
+              "raw": "{{baseUrl}}/cart/{{itemId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["cart", "{{productId}}"]
+              "path": ["cart", "{{itemId}}"]
             }
           }
         },
@@ -371,9 +401,9 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/cart/{{productId}}",
+              "raw": "{{baseUrl}}/cart/{{itemId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["cart", "{{productId}}"]
+              "path": ["cart", "{{itemId}}"]
             }
           }
         }

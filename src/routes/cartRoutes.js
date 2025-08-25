@@ -79,4 +79,13 @@ router.delete('/', (req, res) => {
   res.json({ success: true, message: 'Cart cleared', data: { cart: sampleCart } });
 });
 
-module.exports = router;
+const clearSampleCart = () => {
+  sampleCart.items = [];
+  sampleCart.totalItems = 0;
+  sampleCart.totalPrice = 0;
+};
+
+module.exports = {
+  router,
+  clearSampleCart
+};
