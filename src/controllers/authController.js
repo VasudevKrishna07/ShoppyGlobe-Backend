@@ -35,25 +35,33 @@ const register = asyncHandler(async (req, res, next) => {
   await user.save({ validateBeforeSave: false });
 
   // Send verification email
-  try {
-    const verificationURL = `${req.get('origin') || process.env.CLIENT_URL}/verify-email/${verificationToken}`;
+  // try {
+  //   const verificationURL = `${req.get('origin') || process.env.CLIENT_URL}/verify-email/${verificationToken}`;
     
-    // await new Email(user, verificationURL).sendWelcome();
+  //   // await new Email(user, verificationURL).sendWelcome();
     
-      console.log('Email would be sent to:', user.email);
-      res.status(200).json({
-        success: true,
-        message: 'Password reset instructions sent to email'
-      });
-    logger.info(`New user registered: ${email}`);
-  } catch (error) {
-    user.emailVerificationToken = undefined;
-    user.emailVerificationExpires = undefined;
-    await user.save({ validateBeforeSave: false });
+  //     console.log('Email would be sent to:', user.email);
+  //     res.status(200).json({
+  //       success: true,
+  //       message: 'Password reset instructions sent to email'
+  //     });
+  //   logger.info(`New user registered: ${email}`);
+  // } catch (error) {
+  //   user.emailVerificationToken = undefined;
+  //   user.emailVerificationExpires = undefined;
+  //   await user.save({ validateBeforeSave: false });
 
-    logger.error('Email sending failed:', error);
-    return next(new AppError('User created but email could not be sent', 500));
-  }
+  //   logger.error('Email sending failed:', error);
+  //   return next(new AppError('User created but email could not be sent', 500));
+  // }
+
+  const verificationURL = `${req.get('origin')||process.env.CLIENT_URL}/verify-email/${verificationToken}`;
+    sendVerificationEmail(user, verificationURL)
+      .then(() => logger.info(`Verification email sent to ${email}`))
+      .catch(err => {
+        logger.error('Email sending failed:', err);
+        // We do NOT send a response here
+      });
 
   // Generate JWT token
   const token = user.generateAuthToken();
