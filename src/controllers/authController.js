@@ -34,6 +34,8 @@ const register = asyncHandler(async (req, res, next) => {
   const verificationToken = user.createEmailVerificationToken();
   await user.save({ validateBeforeSave: false });
 
+  const verificationURL = `${req.get('origin') || process.env.CLIENT_URL}/verify-email/${verificationToken}`;
+
   // Send verification email
   // try {
   //   const verificationURL = `${req.get('origin') || process.env.CLIENT_URL}/verify-email/${verificationToken}`;
@@ -101,6 +103,8 @@ const register = asyncHandler(async (req, res, next) => {
   // Remove password from output
   user.password = undefined;
   user.refreshTokens = undefined;
+
+  logger.info(`New user registered: ${email}`);
 
   res.status(201).json({
     success: true,
