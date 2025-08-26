@@ -4,7 +4,7 @@ const User = require('../models/User');
 const logger = require('../config/logger');
 const asyncHandler = require('../utils/asyncHandler');
 const AppError = require('../utils/appError');
-// const Email = require('../services/emailService');
+const Email = require('../services/emailService');
 
 /**
  * @desc    Register a new user
@@ -38,7 +38,7 @@ const register = asyncHandler(async (req, res, next) => {
   // try {
   //   const verificationURL = `${req.get('origin') || process.env.CLIENT_URL}/verify-email/${verificationToken}`;
     
-  //   // await new Email(user, verificationURL).sendWelcome();
+  //   await new Email(user, verificationURL).sendWelcome();
     
   //     console.log('Email would be sent to:', user.email);
   //     res.status(200).json({
@@ -55,13 +55,28 @@ const register = asyncHandler(async (req, res, next) => {
   //   return next(new AppError('User created but email could not be sent', 500));
   // }
 
-  const verificationURL = `${req.get('origin')||process.env.CLIENT_URL}/verify-email/${verificationToken}`;
-    sendVerificationEmail(user, verificationURL)
-      .then(() => logger.info(`Verification email sent to ${email}`))
-      .catch(err => {
-        logger.error('Email sending failed:', err);
-        // We do NOT send a response here
-      });
+  Email.sendWelcomeEmail(user, verificationURL)
+    .then(() => {
+      logger.info(`Verification email sent to ${email}`);
+      console.log('Email would be sent to:', user.email);
+    })
+    .catch(async (error) => {
+      // Clean up verification token on email failure
+      user.emailVerificationToken = undefined;
+      user.emailVerificationExpires = undefined;
+      await user.save({ validateBeforeSave: false });
+      
+      logger.error('Email sending failed:', error);
+      // Don't send response here - just log the error
+    });
+
+  // const verificationURL = `${req.get('origin')||process.env.CLIENT_URL}/verify-email/${verificationToken}`;
+  //   sendVerificationEmail(user, verificationURL)
+  //     .then(() => logger.info(`Verification email sent to ${email}`))
+  //     .catch(err => {
+  //       logger.error('Email sending failed:', err);
+  //       // We do NOT send a response here
+  //     });
 
   // Generate JWT token
   const token = user.generateAuthToken();
