@@ -67,7 +67,7 @@ const swaggerOptions = {
     servers: [
       {
         url: process.env.NODE_ENV === 'production' 
-          ? 'https://api.shoppyglobe.com' 
+          ? 'https://shoppyglobe-backend-7qnq.onrender.com/api' 
           : `http://localhost:${process.env.PORT || 5000}`,
         description: process.env.NODE_ENV === 'production' ? 'Production server' : 'Development server'
       }
@@ -123,7 +123,7 @@ const corsOptions = {
     const allowedOrigins = [
       process.env.CLIENT_URL,
       process.env.CLIENT_URL_PROD,
-      'http://localhost:3000',
+      'https://shoppy-globe-frontend-beta.vercel.app/',
       'http://localhost:3001'
     ].filter(Boolean);
     
