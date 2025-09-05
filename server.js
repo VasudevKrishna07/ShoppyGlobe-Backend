@@ -1,12 +1,5 @@
-process.on('uncaughtException', err => {
-  console.error('Uncaught Exception:', err);
-  process.exit(1);
-});
 
-process.on('unhandledRejection', err => {
-  console.error('Unhandled Rejection:', err);
-  process.exit(1);
-});
+require('dotenv').config();
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -22,7 +15,6 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 
 // Import configurations
-require('dotenv').config();
 const connectDB = require('./src/config/database');
 const logger = require('./src/config/logger');
 
@@ -32,16 +24,10 @@ const notFound = require('./src/middleware/notFound');
 
 // Import routes
 const authRoutes = require('./src/routes/authRoutes');
-// const userRoutes = require('./src/routes/userRoutes');
 const productRoutes = require('./src/routes/productRoutes');
-// const categoryRoutes = require('./src/routes/categoryRoutes');
 const { router: cartRoutes } = require('./src/routes/cartRoutes');
 const orderRoutes = require('./src/routes/orderRoutes');
 const paymentRoutes = require('./src/routes/paymentRoutes');
-// const reviewRoutes = require('./src/routes/reviewRoutes');
-// const wishlistRoutes = require('./src/routes/wishlistRoutes');
-// const adminRoutes = require('./src/routes/adminRoutes');
-// const uploadRoutes = require('./src/routes/uploadRoutes');
 
 const app = express();
 
@@ -67,7 +53,7 @@ const swaggerOptions = {
     servers: [
       {
         url: process.env.NODE_ENV === 'production' 
-          ? 'https://shoppyglobe-backend-7qnq.onrender.com/api' 
+          ? 'https://shoppyglobe-backend-7qnq.onrender.com' 
           : `http://localhost:${process.env.PORT || 5000}`,
         description: process.env.NODE_ENV === 'production' ? 'Production server' : 'Development server'
       }
@@ -101,7 +87,11 @@ const limiter = rateLimit({
     error: 'Too many requests from this IP, please try again later.'
   },
   standardHeaders: true,
-  legacyHeaders: false
+  legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting for health checks
+    return req.path === '/health' || req.path === '/';
+  }
 });
 
 // Security Middleware
@@ -117,27 +107,45 @@ app.use(helmet({
   },
 }));
 
-// CORS configuration
+// CORS configuration - FIXED
 const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = [
       process.env.CLIENT_URL,
       process.env.CLIENT_URL_PROD,
-      'https://shoppy-globe-frontend-beta.vercel.app/',
+      'https://shoppy-globe-frontend-beta.vercel.app', // REMOVED trailing slash
+      'http://localhost:3000',
       'http://localhost:3001'
     ].filter(Boolean);
     
+    // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin || allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
+      logger.warn(`CORS blocked origin: ${origin}`);
       callback(new Error('Not allowed by CORS'));
     }
   },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With',
+    'Accept',
+    'Origin',
+    'Cache-Control',
+    'X-File-Name'
+  ],
   credentials: true,
   optionsSuccessStatus: 200
 };
 
 app.use(cors(corsOptions));
+
+// Handle preflight requests explicitly
+app.options('*', cors(corsOptions));
+
+// Body parsing middleware
 app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
@@ -163,10 +171,18 @@ app.use(hpp({
   whitelist: ['sort', 'fields', 'page', 'limit', 'category', 'brand', 'price']
 }));
 
-// Apply rate limiting to all requests
+// Apply rate limiting to API routes only in production
 if (process.env.NODE_ENV === 'production') {
   app.use('/api/', limiter);
 }
+
+// Debug middleware for CORS issues (remove in production)
+app.use((req, res, next) => {
+  if (process.env.NODE_ENV === 'development') {
+    logger.info(`${req.method} ${req.path} - Origin: ${req.get('Origin')}`);
+  }
+  next();
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -175,31 +191,15 @@ app.get('/health', (req, res) => {
     message: 'Server is running',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
-    environment: process.env.NODE_ENV
+    environment: process.env.NODE_ENV,
+    version: '1.0.0'
   });
 });
 
-// Add this before your routes
+// Favicon handler
 app.get('/favicon.ico', (req, res) => {
   res.status(204).end(); // No content
 });
-
-
-// API Routes
-app.use('/api/auth', authRoutes);
-// app.use('/api/users', userRoutes);
-app.use('/api/products', productRoutes);
-// app.use('/api/categories', categoryRoutes);
-app.use('/api/cart', cartRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/payments', paymentRoutes);
-// app.use('/api/reviews', reviewRoutes);
-// app.use('/api/wishlist', wishlistRoutes);
-// app.use('/api/admin', adminRoutes);
-// app.use('/api/upload', uploadRoutes);
-
-// Serve static files
-app.use('/uploads', express.static('uploads'));
 
 // Root endpoint
 app.get('/', (req, res) => {
@@ -207,13 +207,31 @@ app.get('/', (req, res) => {
     message: 'Welcome to ShoppyGlobe API',
     version: '1.0.0',
     documentation: '/api-docs',
-    health: '/health'
+    health: '/health',
+    environment: process.env.NODE_ENV
   });
 });
 
-// Error Handling Middleware
+// API Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/cart', cartRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/payments', paymentRoutes);
+
+// Serve static files
+app.use('/uploads', express.static('uploads'));
+
+// Error Handling Middleware (must be last)
 app.use(notFound);
 app.use(errorHandler);
+
+// Start server
+const PORT = process.env.PORT || 5000;
+const server = app.listen(PORT, () => {
+  logger.info(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+  logger.info(`API Documentation available at: ${process.env.NODE_ENV === 'production' ? 'https://shoppyglobe-backend-7qnq.onrender.com' : `http://localhost:${PORT}`}/api-docs`);
+});
 
 // Handle uncaught exceptions
 process.on('uncaughtException', (err) => {
@@ -224,7 +242,9 @@ process.on('uncaughtException', (err) => {
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err) => {
   logger.error('Unhandled Rejection:', err);
-  process.exit(1);
+  server.close(() => {
+    process.exit(1);
+  });
 });
 
 // Graceful shutdown
@@ -239,10 +259,15 @@ process.on('SIGTERM', () => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
-
-const server = app.listen(PORT, () => {
-  logger.info(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+process.on('SIGINT', () => {
+  logger.info('SIGINT signal received: closing HTTP server');
+  server.close(() => {
+    logger.info('HTTP server closed');
+    mongoose.connection.close(false, () => {
+      logger.info('MongoDB connection closed');
+      process.exit(0);
+    });
+  });
 });
 
 module.exports = app;
