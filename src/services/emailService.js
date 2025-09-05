@@ -246,7 +246,7 @@ class EmailService {
       const html = this.getTemplate(template, {
         ...variables,
         subject,
-        clientUrl: process.env.CLIENT_URL || 'http://localhost:3000'
+        clientUrl: process.env.CLIENT_URL || 'https://shoppy-globe-frontend-beta.vercel.app/'
       });
 
       const mailOptions = {
